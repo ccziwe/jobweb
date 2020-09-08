@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>登录</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <meta http-equiv="refresh" content="0;ie.html" />
+    <![endif]-->
+    <script>if (window.top !== window.self) { window.top.location = window.location; }</script>
+</head>
+
+<body class="gray-bg">
+
+    <div class="middle-box text-center loginscreen  animated fadeInDown">
+        <div>
+            <div>
+
+                <h1 class="logo-name"></h1>
+
+            </div>
+            <h3>登录</h3>
+
+            <div class="m-t">
+                <div class="form-group">
+                    <input type="name" id='name' class="form-control" placeholder="用户名" required="">
+                </div>
+                <div class="form-group">
+                    <input type="password" id='pwd' class="form-control" placeholder="密码" required="">
+                </div>
+                <button type="button" onclick="login()" class="btn btn-primary block full-width m-b">登 录</button>
+                <p class="text-muted text-center"><small>没有账户？</small><a href="register.html">点此注册</a>
+                </p>
+                <p class="text-muted text-center"><small>忘记密码？</small><a onclick="forget()">忘记密码</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局js -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/HOST_URL.js"></script>
+
+</body>
+<script>
+    function login() {
+        $.ajax({
+            type: "POST",
+            url: HOST_URL + "/user/userLogin",
+            data: {
+                user_name: document.getElementById("name").value,
+                user_password: document.getElementById("pwd").value
+            },
+            dataType: "json",
+            success: function (data) {
+                if (data.status == 200) {
+                    const token = data.object.token;
+                    window.localStorage.setItem('token', token);
+                    layer.msg('登录成功', { icon: 1, time: 2000, shade: 0.4 }, function () {
+                        if (data.object.user.user_id == 1) {
+                            window.location.href = "index_a.html"
+                        } else {
+                            window.location.href = "index.html"
+                        }
+                    })
+                } else {
+                    layer.msg(data.msg, { icon: 2 })
+                }
+            },
+        });
+    }
+
+    function forget(){
+        window.open("http://wpa.qq.com/msgrd?v=3&uin="+HOST_QQ+"&site=qq&menu=yes");   
+    }
+</script>
+
+</html>

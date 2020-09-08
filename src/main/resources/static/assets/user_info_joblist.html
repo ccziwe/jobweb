@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title> - 数据表格</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>兼职任务列表</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a>兼职列表</a>
+                </li>
+                <li>
+                    <strong>兼职任务列表</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-sm-8">
+            <div class="title-action">
+                <!-- <a class="btn btn-primary">保存</a> -->
+            </div>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>兼职任务列表 <small></small></h5>
+
+                    </div>
+                    <div class="ibox-content">
+
+                        <table class="table table-striped table-bordered table-hover dataTables-example">
+                            <thead>
+                                <tr>
+                                    <th>标题</th>
+                                    <th>发布时间</th>
+                                    <th>最后更新时间</th>
+                                    <th>详情</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ttbody">
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 全局js -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/HOST_URL.js"></script>
+
+    <script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+
+    <!-- Data Tables -->
+    <script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+
+    <!-- 自定义js -->
+    <script src="js/content.js"></script>
+    <script>
+
+        // 详情
+        function details(articleId) {
+            layer.open({
+                type: 2,
+                title: '',
+                shadeClose: false,           //弹出框之外的地方是否可以点击
+                offset: '10%',
+                area: ['60%', '80%'],
+                content: HOST_URL + '/assets/details.html?articleId=' + articleId,
+                success: function (layero, index) {
+                },
+            });
+        }
+
+        // 报名
+        function enroll(articleId) {
+            layer.confirm('确认报名吗', function () {
+                $.ajax({
+                    type: "get",
+                    headers: { token: valToken },
+                    url: HOST_URL + "/enroll/userEnroll",
+                    dataType: "json",
+                    data: {
+                        articleId: articleId,
+                    },
+                    success: function (data) {
+                        if (data.status == 200) {
+                            parent.layer.msg(data.msg, { icon: 1 });
+                            location.reload()
+                        } else {
+                            parent.layer.msg(data.msg, { icon: 2 });
+                            location.reload()
+                        }
+                    },
+                });
+            })
+        }
+    </script>
+
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function () {
+            var tipContent = '';
+            $.ajax({
+                type: "POST",
+                url: HOST_URL + "/article/queryAllArticle",
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == 200) {
+                        if (data.object != null) {
+                            $('.dataTables-example').dataTable({
+                                "data": data.object,
+                                "columns": [
+                                    { "data": "title" },
+                                    { "data": "createDate" },
+                                    { "data": "updateDate" },
+                                    {
+                                        "data": null, "render": function (data, tyoe, row) {
+                                            var uidop = '';
+                                            if (valToken == null) {
+                                                uidop = '<a class="btn btn-success btn-rounded" onclick="details(' + row.articleId + ')">详情 </a>&nbsp登录后即可报名'
+                                            } else {
+                                                uidop = '<a class="btn btn-success btn-rounded" onclick="details(' + row.articleId + ')">详情</a>'
+                                                    + '<a class="btn btn-danger btn-rounded" onclick="enroll(' + row.articleId + ')">报名</a>'
+                                            }
+
+                                            return uidop;
+                                        }
+                                    },
+                                ],
+                            });
+                        }
+                    } else {
+                        parent.layer.alert(data.msg)
+                    }
+                },
+            });
+
+            //     $('.dataTables-example').dataTable();
+
+            /* Init DataTables */
+            var oTable = $('#editable').dataTable();
+
+            /* Apply the jEditable handlers to the table */
+            /*oTable.$('td').editable('../example_ajax.php', {
+                "callback": function (sValue, y) {
+                    var aPos = oTable.fnGetPosition(this);
+                    oTable.fnUpdate(sValue, aPos[0], aPos[1]);
+                },
+                "submitdata": function (value, settings) {
+                    return {
+                        "row_id": this.parentNode.getAttribute('id'),
+                        "column": oTable.fnGetPosition(this)[2]
+                    };
+                },
+                "width": "90%",
+                "height": "100%"
+            });*/
+        });
+
+
+        function fnClickAddRow() {
+            $('#editable').dataTable().fnAddData([
+                "Custom row",
+                "New row",
+                "New row",
+                "New row",
+                "New row"]);
+        }
+    </script>
+
+
+
+
+</body>
+
+</html>

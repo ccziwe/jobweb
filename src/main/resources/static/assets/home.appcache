@@ -1,0 +1,18 @@
+CACHE MANIFEST
+
+# 直接缓存的文件
+CACHE:
+/css/bootstrap.min.css
+/css/font-awesome.min.css
+/css/animate.css
+/css/style.css
+/js/js/jquery.min.js
+/js/bootstrap.min.js
+/js/plugins/metisMenu/jquery.metisMenu.js
+/js/plugins/slimscroll/jquery.slimscroll.min.js
+/js/plugins/layer/layer.min.js
+/js/hAdmin.js
+/js/index.js
+
+# 需要在线访问的文件
+NETWORK:

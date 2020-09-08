@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title> - 数据表格</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>申请报名管理 <small></small></h5>
+
+                    </div>
+                    <div class="ibox-content">
+
+                        <table class="table table-striped table-bordered table-hover dataTables-example">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>是否已经通过</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ttbody">
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- 全局js -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/HOST_URL.js"></script>
+
+
+
+    <script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+
+    <!-- Data Tables -->
+    <script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+
+    <!-- 自定义js -->
+    <script src="js/content.js"></script>
+    <script>
+        // 管理员通过审核
+        function passEnroll(user_id, articleId) {
+            layer.confirm('确认通过审核吗', function () {
+                $.ajax({
+                    type: "GET",
+                    headers: { token: valToken },
+                    url: HOST_URL + "/enroll/passEnroll",
+                    data: {
+                        userId: user_id,
+                        articleId:articleId,
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.status == 200) {
+                            parent.layer.msg('审核通过', { icon: 1 });
+                            location.reload()
+                        } else {
+                            parent.layer.alert(data.msg)
+                        }
+                    },
+                });
+            });
+        }
+
+        //获取url中的参数  
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象  
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数   
+            if (r != null) return unescape(r[2]); return null; //返回参数值  
+        } 
+    </script>
+
+
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function () {
+            var articleId = getUrlParam('articleId');
+            var status = getUrlParam('status');
+
+            var tipContent = '';
+            $.ajax({
+                type: "POST",
+                headers: { token: valToken },
+                url: HOST_URL + "/enroll/queryAllEnroll",
+                dataType: "json",
+                data: {
+                    articleId: articleId,
+                    status: status,
+                },
+                success: function (data) {
+                    if (data.status == 200) {
+                        if (data.object != null) {
+                            $('.dataTables-example').dataTable({
+                                "data": data.object,
+                                "columns": [
+                                    { "data": "user_name" },
+                                    {
+                                        "data": null, "render": function (data, tyoe, row) {
+                                            if (status == 0) {
+                                                return '<a class="btn btn-success btn-rounded" onclick="passEnroll(' + row.user_id + ',' + articleId + ')">通过审核</a>';
+                                            } else { return "已通过"; }
+                                        }
+                                    },
+                                ],
+                            });
+                        }
+                    } else {
+                        parent.layer.alert(data.msg)
+                    }
+                },
+            });
+
+            //     $('.dataTables-example').dataTable();
+
+            /* Init DataTables */
+            var oTable = $('#editable').dataTable();
+
+            /* Apply the jEditable handlers to the table */
+            /*oTable.$('td').editable('../example_ajax.php', {
+                "callback": function (sValue, y) {
+                    var aPos = oTable.fnGetPosition(this);
+                    oTable.fnUpdate(sValue, aPos[0], aPos[1]);
+                },
+                "submitdata": function (value, settings) {
+                    return {
+                        "row_id": this.parentNode.getAttribute('id'),
+                        "column": oTable.fnGetPosition(this)[2]
+                    };
+                },
+                "width": "90%",
+                "height": "100%"
+            });*/
+        });
+
+
+        function fnClickAddRow() {
+            $('#editable').dataTable().fnAddData([
+                "Custom row",
+                "New row",
+                "New row",
+                "New row",
+                "New row"]);
+        }
+    </script>
+
+
+
+
+</body>
+
+</html>

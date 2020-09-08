@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title> - 空白页</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>钱包管理</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a>个人管理</a>
+                </li>
+                <li>
+                    <strong>钱包管理</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-sm-8">
+            <div class="title-action">
+                <!-- <a class="btn btn-primary">保存</a> -->
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper wrapper-content">
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="wrapper wrapper-content animated fadeInRight">
+                    <div class="row">
+                        <div class="col-sm-12">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <h5>钱包管理</h5>
+
+                                </div>
+                                <div class="ibox-content">
+                                    <form class="form-horizontal m-t" id="signupForm">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">可用余额：</label>
+                                            <div class="col-sm-8">
+                                                <input id="money" type="text" disabled="" placeholder=""
+                                                    class="form-control">
+                                            </div>
+                                            <button class="btn btn-primary" type="button"
+                                                onclick="withdrawal()">提现</button>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">冻结余额(提现中)：</label>
+                                            <div class="col-sm-8">
+                                                <input id="frozen_money" type="text" disabled="" placeholder=""
+                                                    class="form-control">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- 全局js -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/HOST_URL.js"></script>
+
+    <!-- 自定义js -->
+    <script src="js/content.js"></script>
+
+
+
+
+</body>
+
+</html>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            headers: { token: valToken },
+            url: HOST_URL + "/userInfo/queryUserById",
+            dataType: "json",
+            success: function (data) {
+                if (data.status == 200) {
+                    $('#money').attr('placeholder', data.object.user_money);
+                    $('#frozen_money').attr('placeholder', data.object.user_frozen_money);
+                } else {
+                    // window.location.href = "login.html"
+                }
+            },
+            error: function (data) {
+            },
+        });
+    })
+
+    function withdrawal() {
+        layer.open({
+            id: 1,
+            type: 1,
+            title: '提现',
+            style: 'width:80%;height:auto;',
+            content: '<div class="layui-input-inline"><input name="location" id="recharge" class="layui-input" lay-verify="number|Ndouble" type="number"/> </div>',
+            btn: ['提现', '取消'],
+            yes: function (index, layero) {
+                //获取输入框里面的值
+                var closeContent = $("#recharge").val();
+                if (true) {
+                    layer.confirm('确认提现吗？', function () {
+                        if ($('#money').attr('placeholder') >= closeContent) {
+                            $.ajax({
+                                type: "GET",
+                                headers: { token: valToken },
+                                url: HOST_URL + "/user/userWithDrawal",
+                                data: {
+                                    withDrawalMoney: closeContent,
+                                },
+                                dataType: "json",
+                                success: function (data) {
+                                    if (data.status == 200) {
+                                        parent.layer.msg(data.msg, { icon: 1 });
+                                        layer.close(index);
+                                        location.reload()
+                                    } else {
+                                        parent.layer.alert(data.msg)
+                                    }
+                                },
+                            });
+                        } else {
+                            parent.layer.msg('余额不足', { icon: 2 });
+                            location.reload()
+                        }
+                    });
+                } else {
+                    // 输入错误
+                    layer.msg('输入错误', { icon: 2 });
+                }
+                layer.close(index);
+                // 在这里提交数据
+            },
+            no: function (index, layero) {
+                layer.close(index);
+            }
+        });
+
+
+    }
+</script>

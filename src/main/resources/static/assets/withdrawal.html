@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title> - 数据表格</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>提现管理 <small>提现</small></h5>
+
+                    </div>
+                    <div class="ibox-content">
+
+                        <table class="table table-striped table-bordered table-hover dataTables-example">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>支付宝姓名</th>
+                                    <th>支付宝收款账号</th>
+                                    <th>申请提现金额</th>
+                                    <th>是否提现</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ttbody">
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 全局js -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/HOST_URL.js"></script>
+
+
+
+    <script src="js/plugins/jeditable/jquery.jeditable.js"></script>
+
+    <!-- Data Tables -->
+    <script src="js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="js/plugins/dataTables/dataTables.bootstrap.js"></script>
+
+    <!-- 自定义js -->
+    <script src="js/content.js"></script>
+    <script>
+        // 提现
+        function PassWithDrawal(id, name) {
+            layer.confirm('确认通过用户' + name + '的提现申请吗', function () {
+                // 充值接口
+                $.ajax({
+                    type: "GET",
+                    headers: { token: valToken },
+                    url: HOST_URL + "/admin/PassUserWithDrawal",
+                    data: {
+                        user_id: id
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.status == 200) {
+                            parent.layer.msg('用户' + name + '审核提现通过', { icon: 1 });
+                            location.reload()
+                        } else {
+                            parent.layer.alert(data.msg)
+                        }
+                    },
+                });
+            });
+        }
+
+         // 修改体现金额
+         function recharge(id, name,frozen_money) {
+            layer.open({
+                id: 1,
+                type: 1,
+                title: '修改' + name + '的提现金额',
+                style: 'width:80%;height:auto;',
+                content: '<div class="layui-input-inline"><input name="location" id="recharge" class="layui-input" value="'+frozen_money+'" lay-verify="number|Ndouble" type="number"/> </div>',
+                btn: ['修改', '取消'],
+                yes: function (index, layero) {
+                    //获取输入框里面的值
+                    var closeContent = $("#recharge").val();
+                    if (true) {
+                        layer.confirm('确认修改用户' + name + '的提现金额：' + closeContent, function () {
+                            // 充值接口
+                            $.ajax({
+                                type: "GET",
+                                headers: { token: valToken },
+                                url: HOST_URL + "/admin/updateUserFrozenMoney",
+                                data: {
+                                    money: closeContent,
+                                    user_id: id
+                                },
+                                dataType: "json",
+                                success: function (data) {
+                                    if (data.status == 200) {
+                                        parent.layer.msg('用户' + name + '提现余额：' + closeContent, { icon: 1 });
+                                        layer.close(index);
+                                        location.reload()
+                                    } else {
+                                        parent.layer.alert(data.msg)
+                                    }
+                                },
+                            });
+                        });
+                    } else {
+                        // 输入错误
+                        layer.msg('输入错误', { icon: 2 });
+                    }
+                    layer.close(index);
+                    // 在这里提交数据
+                },
+                no: function (index, layero) {
+                    layer.close(index);
+                }
+            });
+        }
+    </script>
+
+
+    <!-- Page-Level Scripts -->
+    <script>
+        $(document).ready(function () {
+            var tipContent = '';
+            $.ajax({
+                type: "POST",
+                headers: { token: valToken },
+                url: HOST_URL + "/admin/queryWithDrawalUser",
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == 200) {
+                        if (data.object != null) {
+                            $('.dataTables-example').dataTable({
+                                "data": data.object,
+                                "columns": [
+                                    { "data": "user_name" },
+                                    { "data": "zfb_name" },
+                                    { "data": "zfb_number" },
+                                    { "data": "user_frozen_money" },
+                                    {
+                                        "data": null, "render": function (data, tyoe, row) {
+                                            var uidop =  '<a class="btn btn-primary btn-rounded" onclick="recharge(' + row.user_id + ',\'' + row.user_name + '\','+row.user_frozen_money+')">修改提现金额</a>'
+                                            +'<a class="btn btn-success btn-rounded" onclick="PassWithDrawal(' + row.user_id + ',\'' + row.user_name + '\')">确认提现</a>';
+                                            return uidop;
+                                        }
+                                    },
+                                ],
+                            });
+                        }
+                    } else {
+                        parent.layer.alert(data.msg)
+                    }
+                },
+            });
+
+            //     $('.dataTables-example').dataTable();
+
+            /* Init DataTables */
+            var oTable = $('#editable').dataTable();
+
+            /* Apply the jEditable handlers to the table */
+            /*oTable.$('td').editable('../example_ajax.php', {
+                "callback": function (sValue, y) {
+                    var aPos = oTable.fnGetPosition(this);
+                    oTable.fnUpdate(sValue, aPos[0], aPos[1]);
+                },
+                "submitdata": function (value, settings) {
+                    return {
+                        "row_id": this.parentNode.getAttribute('id'),
+                        "column": oTable.fnGetPosition(this)[2]
+                    };
+                },
+                "width": "90%",
+                "height": "100%"
+            });*/
+        });
+
+
+        function fnClickAddRow() {
+            $('#editable').dataTable().fnAddData([
+                "Custom row",
+                "New row",
+                "New row",
+                "New row",
+                "New row"]);
+        }
+    </script>
+
+
+
+
+</body>
+
+</html>
